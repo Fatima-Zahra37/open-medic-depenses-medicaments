@@ -1,0 +1,9 @@
+SELECT ATC5,
+       ROUND(SUM(CASE WHEN annee = 2024 THEN REM ELSE 0 END) / 1e6, 1) AS rem_2024,
+       ROUND(SUM(CASE WHEN annee = 2025 THEN REM ELSE 0 END) / 1e6, 1) AS rem_2025,
+       ROUND((SUM(CASE WHEN annee = 2025 THEN REM ELSE 0 END)
+            - SUM(CASE WHEN annee = 2024 THEN REM ELSE 0 END)) / 1e6, 1) AS hausse_millions
+FROM df
+GROUP BY ATC5
+ORDER BY hausse_millions DESC
+LIMIT 10
