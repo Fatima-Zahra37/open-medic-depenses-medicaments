@@ -9,6 +9,25 @@ Analyse des médicaments remboursés en pharmacie de ville en France entre 2024 
 ## Question métier
 Pourquoi les dépenses de médicaments remboursés augmentent-elles entre 2024 et 2025, alors que le nombre de boîtes baisse ?
 
+## Périmètre et définitions
+| Paramètre | Valeur |
+|---|---|
+| Source | Open Medic, Assurance Maladie (data.gouv.fr) |
+| Périmètre | Médicaments remboursés délivrés en pharmacie de ville, France entière |
+| Période | Années 2024 et 2025 |
+| Volume | 1 916 885 lignes (2024) + 1 873 062 lignes (2025) = 3 789 947 lignes |
+| Une ligne | Un médicament × une tranche d'âge × un sexe × une région × une spécialité de prescripteur |
+
+| Indicateur | Définition |
+|---|---|
+| Montant remboursé | Somme payée par l'Assurance Maladie |
+| Base de remboursement | Prix de référence servant au calcul du remboursement |
+| Coût moyen par boîte | Montant remboursé ÷ nombre de boîtes |
+| Part des génériques | Boîtes de génériques ÷ (génériques + princeps) |
+| Princeps | Médicament d'origine, vendu sous sa marque |
+| Générique | Copie autorisée d'un princeps après expiration du brevet, à prix plus bas |
+| Classe ATC | Classification internationale des médicaments, de l'organe visé (niveau 1) à la molécule (niveau 5) |
+
 ## Chiffres clés
 | Indicateur | 2024 | 2025 | Évolution |
 |---|---|---|---|
@@ -17,7 +36,7 @@ Pourquoi les dépenses de médicaments remboursés augmentent-elles entre 2024 e
 | Coût moyen par boîte | 10,99 € | 11,79 € | **+7,3 %** |
 | Part des génériques (en boîtes) | 49,3 % | 50,1 % | +0,8 point |
 
-## Principaux résultats
+## Résultats clés
 - **La hausse ne vient pas d'une consommation plus forte, mais de traitements plus chers :** le nombre de boîtes baisse, le coût moyen par boîte augmente.
 - **Une hausse très concentrée :** 4 classes de médicaments expliquent 95 % de la hausse, et 10 molécules à elles seules 83 %.
 - **Trois moteurs distincts :** un nouveau remboursement (le vaccin contre le zona, de 0 à 319 M€), des traitements innovants très coûteux (maladie rare du cœur, cancers) et des maladies chroniques fréquentes (diabète, anticoagulants).
@@ -48,6 +67,14 @@ Quatre pages, une par question : vue d'ensemble, médicaments, patients, territo
 5. **Analyse** par médicament, par profil de patient et par région, avec un graphique et une conclusion métier pour chaque partie.
 6. **Validation** des chiffres clés dans trois outils : Pandas, SQL (DuckDB) et Power BI donnent des résultats identiques.
 7. **Export** de deux tableaux résumés pour Power BI, puis construction du tableau de bord.
+
+## Décisions techniques
+- **Lecture des fichiers :** le format par défaut échouait. Fichiers lus avec l'encodage `latin-1`, le séparateur `;`, la virgule décimale et le point des milliers (ex. `1.761,57`). Sans ce dernier réglage, les montants restaient lus comme du texte.
+- **Valeurs inconnues cachées :** aucune case vide, mais les inconnus sont codés `9` ou `99` (secret statistique). Ils sont conservés sous le libellé « Inconnu », car ils représentent de vraies dépenses.
+- **Valeurs négatives :** 55 lignes en 2024 et 6 en 2025 avec un montant remboursé négatif (corrections comptables). Conservées, car elles font partie de la dépense réelle.
+- **Faux doublons :** 3 lignes en 2024 et 8 en 2025 ont la même combinaison (boîte, âge, sexe, région, spécialité), mais ce sont des boîtes non identifiées (code « INCONNU ») avec des montants différents. Conservées.
+- **Comparaison entre années :** les libellés 2025 ont perdu leurs accents, et les codes de spécialité des prescripteurs ont changé. Toutes les comparaisons sont faites sur les **codes**, et les prescripteurs ont été écartés de l'analyse.
+- **Contrôle des totaux :** les montants sont vérifiés automatiquement après chaque étape (assemblage, export), avec un écart de 0 €.
 
 ## Cadre de l'étude et points de vigilance
 - Seuls les médicaments délivrés en **pharmacie de ville** sont couverts (pas l'hôpital).
